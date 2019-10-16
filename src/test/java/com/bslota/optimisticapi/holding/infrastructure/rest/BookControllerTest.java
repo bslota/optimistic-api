@@ -16,6 +16,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -46,7 +48,7 @@ public class BookControllerTest {
         return mockMvc
                 .perform(patch("/books/{id}", id.asString())
                         .content("{\"status\" : \"PLACED_ON_HOLD\"}")
-                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
+                        .header(CONTENT_TYPE, APPLICATION_JSON_VALUE));
     }
 
     private AvailableBook availableBookInTheSystem() {
