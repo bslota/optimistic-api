@@ -1,4 +1,10 @@
-package com.bslota.optimisticapi.holding.domain;
+package com.bslota.optimisticapi.holding.fixtures;
+
+import com.bslota.optimisticapi.holding.domain.Author;
+import com.bslota.optimisticapi.holding.domain.AvailableBook;
+import com.bslota.optimisticapi.holding.domain.BookFactory;
+import com.bslota.optimisticapi.holding.domain.ISBN;
+import com.bslota.optimisticapi.holding.domain.Title;
 
 public class BookFixture {
 

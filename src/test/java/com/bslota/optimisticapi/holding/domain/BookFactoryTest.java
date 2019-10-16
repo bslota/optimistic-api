@@ -2,9 +2,9 @@ package com.bslota.optimisticapi.holding.domain;
 
 import org.junit.Test;
 
-import static com.bslota.optimisticapi.holding.domain.BookFixture.someAuthor;
-import static com.bslota.optimisticapi.holding.domain.BookFixture.someISBN;
-import static com.bslota.optimisticapi.holding.domain.BookFixture.someTitle;
+import static com.bslota.optimisticapi.holding.fixtures.BookFixture.someAuthor;
+import static com.bslota.optimisticapi.holding.fixtures.BookFixture.someISBN;
+import static com.bslota.optimisticapi.holding.fixtures.BookFixture.someTitle;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

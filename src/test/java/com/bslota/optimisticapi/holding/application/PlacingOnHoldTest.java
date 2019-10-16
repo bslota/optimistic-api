@@ -2,16 +2,12 @@ package com.bslota.optimisticapi.holding.application;
 
 import com.bslota.optimisticapi.holding.domain.AvailableBook;
 import com.bslota.optimisticapi.holding.domain.Book;
-import com.bslota.optimisticapi.holding.domain.BookId;
 import com.bslota.optimisticapi.holding.domain.BookRepository;
 import com.bslota.optimisticapi.holding.domain.PlacedOnHoldBook;
+import com.bslota.optimisticapi.holding.infrastructure.memory.InMemoryBookRepository;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import static com.bslota.optimisticapi.holding.domain.BookFixture.someAvailableBook;
+import static com.bslota.optimisticapi.holding.fixtures.BookFixture.someAvailableBook;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -53,20 +49,5 @@ public class PlacingOnHoldTest {
         AvailableBook book = someAvailableBook();
         bookRepository.save(book);
         return book;
-    }
-
-    static class InMemoryBookRepository implements BookRepository {
-
-        private Map<BookId, Book> store = new HashMap<>();
-
-        @Override
-        public Optional<Book> findBy(BookId bookId) {
-            return Optional.ofNullable(store.get(bookId));
-        }
-
-        @Override
-        public void save(Book book) {
-            store.put(book.id(), book);
-        }
     }
 }

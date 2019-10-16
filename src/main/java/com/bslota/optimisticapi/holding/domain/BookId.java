@@ -15,6 +15,10 @@ public final class BookId {
         return new BookId(value);
     }
 
+    public String asString() {
+        return value.toString();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
