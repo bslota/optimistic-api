@@ -43,9 +43,10 @@ public class BookControllerTest {
     }
 
     private ResultActions sendPlaceOnHoldCommandFor(BookId id) throws Exception {
-        return mockMvc.perform(patch("/books/{id}", id.asString())
-                .content("{\"status\" : \"PLACED_ON_HOLD\"}")
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
+        return mockMvc
+                .perform(patch("/books/{id}", id.asString())
+                        .content("{\"status\" : \"PLACED_ON_HOLD\"}")
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
     }
 
     private AvailableBook availableBookInTheSystem() {
