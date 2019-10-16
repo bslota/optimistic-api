@@ -25,12 +25,13 @@ class BookController {
     }
 
     @PatchMapping("/{bookId}")
-    ResponseEntity updateBookStatus(@PathVariable("bookId") UUID bookId, @RequestBody UpdateBookStatus command) {
+    ResponseEntity updateBookStatus(@PathVariable("bookId") UUID bookId,
+                                    @RequestBody UpdateBookStatus command) {
         if (PLACED_ON_HOLD.equals(command.getStatus())) {
             placingOnHold.placeOnHold(BookId.of(bookId));
             return ResponseEntity.noContent().build();
         } else {
-            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
+            return ResponseEntity.ok().build(); //we do not care about it now
         }
     }
 }
