@@ -2,7 +2,6 @@ package com.bslota.optimisticapi.holding.infrastructure.rest;
 
 import com.bslota.optimisticapi.holding.application.PlacingOnHold;
 import com.bslota.optimisticapi.holding.domain.BookId;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,11 +15,11 @@ import static com.bslota.optimisticapi.holding.domain.Status.PLACED_ON_HOLD;
 
 @RestController
 @RequestMapping("/books")
-class BookController {
+class BookHoldingController {
 
     private final PlacingOnHold placingOnHold;
 
-    BookController(PlacingOnHold placingOnHold) {
+    BookHoldingController(PlacingOnHold placingOnHold) {
         this.placingOnHold = placingOnHold;
     }
 

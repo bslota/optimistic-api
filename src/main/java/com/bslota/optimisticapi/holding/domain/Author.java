@@ -14,6 +14,10 @@ public final class Author {
         return new Author(name);
     }
 
+    public String asString() {
+        return name;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

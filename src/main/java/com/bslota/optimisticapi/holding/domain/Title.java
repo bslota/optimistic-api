@@ -14,6 +14,10 @@ public final class Title {
         return new Title(value);
     }
 
+    public String asString() {
+        return title;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

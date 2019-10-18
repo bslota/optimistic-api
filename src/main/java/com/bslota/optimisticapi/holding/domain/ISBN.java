@@ -14,6 +14,10 @@ public final class ISBN {
         return new ISBN(value);
     }
 
+    public String asString() {
+        return value;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
