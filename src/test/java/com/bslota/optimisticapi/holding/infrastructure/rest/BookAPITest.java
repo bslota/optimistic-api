@@ -76,6 +76,24 @@ public class BookAPITest {
         resultActions.andExpect(status().isNoContent());
     }
 
+    @Test
+    public void shouldReturnBookOnHoldAfterItIsPlacedOnHold() throws Exception {
+        //given
+        AvailableBook availableBook = availableBookInTheSystem();
+
+        //and
+        sendPlaceOnHoldCommandFor(availableBook.id());
+
+        //when
+        ResultActions resultActions = getBookWith(availableBook.id());
+
+        //then
+        resultActions.andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(availableBook.id().asString()))
+                .andExpect(jsonPath("$.status").value("PLACED_ON_HOLD"));
+
+    }
+
     private ResultActions sendPlaceOnHoldCommandFor(BookId id) throws Exception {
         return mockMvc
                 .perform(patch("/books/{id}", id.asString())
