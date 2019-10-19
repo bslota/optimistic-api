@@ -7,7 +7,7 @@ public final class AvailableBook implements Book {
     private final Title title;
     private final ISBN isbn;
 
-    AvailableBook(BookId id, Author author, Title title, ISBN isbn) {
+    public AvailableBook(BookId id, Author author, Title title, ISBN isbn) {
         this.id = id;
         this.author = author;
         this.title = title;

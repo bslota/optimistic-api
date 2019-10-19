@@ -2,7 +2,6 @@ package com.bslota.optimisticapi.holding.config;
 
 import com.bslota.optimisticapi.holding.application.PlacingOnHold;
 import com.bslota.optimisticapi.holding.domain.BookRepository;
-import com.bslota.optimisticapi.holding.infrastructure.memory.InMemoryBookRepository;
 import com.bslota.optimisticapi.holding.query.FindingBook;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,18 +9,19 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 class SpringConfiguration {
 
-    @Bean
-    BookRepository inMemoryBookRepository() {
-        return new InMemoryBookRepository();
+    private final BookRepository bookRepository;
+
+    public SpringConfiguration(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
     }
 
     @Bean
     PlacingOnHold placingOnHold() {
-        return new PlacingOnHold(inMemoryBookRepository());
+        return new PlacingOnHold(bookRepository);
     }
 
     @Bean
     FindingBook findingBook() {
-        return new FindingBook(inMemoryBookRepository());
+        return new FindingBook(bookRepository);
     }
 }

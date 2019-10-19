@@ -19,6 +19,10 @@ public final class BookId {
         return value.toString();
     }
 
+    public UUID getValue() {
+        return value;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

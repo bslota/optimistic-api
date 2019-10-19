@@ -91,7 +91,6 @@ public class BookAPITest {
         resultActions.andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(availableBook.id().asString()))
                 .andExpect(jsonPath("$.status").value("PLACED_ON_HOLD"));
-
     }
 
     private ResultActions sendPlaceOnHoldCommandFor(BookId id) throws Exception {

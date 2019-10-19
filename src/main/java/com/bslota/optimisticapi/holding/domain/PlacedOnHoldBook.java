@@ -7,7 +7,7 @@ public final class PlacedOnHoldBook implements Book {
     private final Title title;
     private final ISBN isbn;
 
-    PlacedOnHoldBook(BookId id, Author author, Title title, ISBN isbn) {
+    public PlacedOnHoldBook(BookId id, Author author, Title title, ISBN isbn) {
         this.id = id;
         this.author = author;
         this.title = title;
