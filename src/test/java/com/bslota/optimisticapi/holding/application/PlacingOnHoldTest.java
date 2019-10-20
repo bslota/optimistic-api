@@ -17,14 +17,12 @@ public class PlacingOnHoldTest {
 
     private BookRepository bookRepository = new InMemoryBookRepository();
     private PlacingOnHold placingOnHold = new PlacingOnHold(bookRepository);
+    private PatronId patronId = somePatronId();
 
     @Test
     public void shouldPlaceOnHoldAvailableBook() {
         //given
         AvailableBook availableBook = someExistingAvailableBook();
-
-        //and
-        PatronId patronId = somePatronId();
 
         //when
         placingOnHold.placeOnHold(new PlaceOnHoldCommand(availableBook.id(), patronId));
@@ -38,9 +36,6 @@ public class PlacingOnHoldTest {
     public void bookPlacedOnHoldShouldHaveSameAttributesAsAvailableOne() {
         //given
         AvailableBook availableBook = someExistingAvailableBook();
-
-        //and
-        PatronId patronId = somePatronId();
 
         //when
         placingOnHold.placeOnHold(new PlaceOnHoldCommand(availableBook.id(), patronId));

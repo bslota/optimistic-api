@@ -35,6 +35,8 @@ public class BookAPITest {
     @Autowired
     private BookRepositoryFixture bookRepositoryFixture;
 
+    private PatronId patronId = somePatronId();
+
     @Test
     public void shouldNotFindAnyBook() throws Exception {
         //given
@@ -70,9 +72,6 @@ public class BookAPITest {
         //given
         AvailableBook availableBook = bookRepositoryFixture.availableBookInTheSystem();
 
-        //and
-        PatronId patronId = somePatronId();
-
         //when
         ResultActions resultActions = sendPlaceOnHoldCommandFor(availableBook.id(), patronId);
 
@@ -84,9 +83,6 @@ public class BookAPITest {
     public void shouldReturnBookOnHoldAfterItIsPlacedOnHold() throws Exception {
         //given
         AvailableBook availableBook = bookRepositoryFixture.availableBookInTheSystem();
-
-        //and
-        PatronId patronId = somePatronId();
 
         //and
         sendPlaceOnHoldCommandFor(availableBook.id(), patronId);
