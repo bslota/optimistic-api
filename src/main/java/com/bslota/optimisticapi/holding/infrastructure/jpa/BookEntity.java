@@ -14,6 +14,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Version;
 import java.util.UUID;
 
 @Entity
@@ -34,16 +35,21 @@ class BookEntity {
     @Enumerated(EnumType.STRING)
     private BookEntityStatus status;
 
+    @Version
+    private long version;
+
     private BookEntity() {
     }
 
-    private BookEntity(UUID id, String title, String author, String isbn, UUID patronId, BookEntityStatus status) {
+    private BookEntity(UUID id, String title, String author, String isbn, UUID patronId, BookEntityStatus status,
+                       long version) {
         this.id = id;
         this.title = title;
         this.author = author;
         this.isbn = isbn;
         this.patronId = patronId;
         this.status = status;
+        this.version = version;
     }
 
     static BookEntity from(Book book) {
@@ -53,7 +59,8 @@ class BookEntity {
                 book.author().asString(),
                 book.isbn().asString(),
                 patronId,
-                BookEntityStatus.of(book));
+                BookEntityStatus.of(book),
+                book.version().asLong());
     }
 
     UUID getId() {
@@ -79,10 +86,11 @@ class BookEntity {
     Book toDomainModel() {
         switch (status) {
             case AVAILABLE:
-                return new AvailableBook(BookId.of(id), Author.named(author), Title.of(title), ISBN.of(isbn));
+                return new AvailableBook(BookId.of(id), Author.named(author), Title.of(title), ISBN.of(isbn),
+                        com.bslota.optimisticapi.holding.aggregate.Version.from(version));
             case PLACED_ON_HOLD:
                 return new PlacedOnHoldBook(BookId.of(id), Author.named(author), Title.of(title), ISBN.of(isbn),
-                        PatronId.from(patronId));
+                        PatronId.from(patronId), com.bslota.optimisticapi.holding.aggregate.Version.from(version));
             default:
                 throw new IllegalStateException("Book state is invalid");
         }

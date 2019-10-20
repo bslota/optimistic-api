@@ -1,8 +1,10 @@
 package com.bslota.optimisticapi.holding.infrastructure.jpa;
 
+import com.bslota.optimisticapi.holding.aggregate.StaleStateIdentified;
 import com.bslota.optimisticapi.holding.domain.Book;
 import com.bslota.optimisticapi.holding.domain.BookId;
 import com.bslota.optimisticapi.holding.domain.BookRepository;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.repository.Repository;
 import org.springframework.stereotype.Component;
 
@@ -26,8 +28,12 @@ class JpaBasedBookRepository implements BookRepository {
 
     @Override
     public void save(Book book) {
-        BookEntity entity = BookEntity.from(book);
-        jpaBookRepository.save(entity);
+        try {
+            BookEntity entity = BookEntity.from(book);
+            jpaBookRepository.save(entity);
+        } catch (OptimisticLockingFailureException ex) {
+            throw StaleStateIdentified.forAggregateWith(book.id().getValue());
+        }
     }
 }
 
