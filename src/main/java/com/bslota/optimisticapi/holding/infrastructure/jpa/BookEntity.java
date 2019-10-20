@@ -5,6 +5,7 @@ import com.bslota.optimisticapi.holding.domain.AvailableBook;
 import com.bslota.optimisticapi.holding.domain.Book;
 import com.bslota.optimisticapi.holding.domain.BookId;
 import com.bslota.optimisticapi.holding.domain.ISBN;
+import com.bslota.optimisticapi.holding.domain.PatronId;
 import com.bslota.optimisticapi.holding.domain.PlacedOnHoldBook;
 import com.bslota.optimisticapi.holding.domain.Title;
 
@@ -28,26 +29,30 @@ class BookEntity {
 
     private String isbn;
 
+    private UUID patronId;
+
     @Enumerated(EnumType.STRING)
     private BookEntityStatus status;
-
 
     private BookEntity() {
     }
 
-    private BookEntity(UUID id, String title, String author, String isbn, BookEntityStatus status) {
+    private BookEntity(UUID id, String title, String author, String isbn, UUID patronId, BookEntityStatus status) {
         this.id = id;
         this.title = title;
         this.author = author;
         this.isbn = isbn;
+        this.patronId = patronId;
         this.status = status;
     }
 
     static BookEntity from(Book book) {
+        UUID patronId = (book instanceof PlacedOnHoldBook) ? ((PlacedOnHoldBook) book).getPatronId().getValue() : null;
         return new BookEntity(book.id().getValue(),
                 book.title().asString(),
                 book.author().asString(),
                 book.isbn().asString(),
+                patronId,
                 BookEntityStatus.of(book));
     }
 
@@ -76,7 +81,8 @@ class BookEntity {
             case AVAILABLE:
                 return new AvailableBook(BookId.of(id), Author.named(author), Title.of(title), ISBN.of(isbn));
             case PLACED_ON_HOLD:
-                return new PlacedOnHoldBook(BookId.of(id), Author.named(author), Title.of(title), ISBN.of(isbn));
+                return new PlacedOnHoldBook(BookId.of(id), Author.named(author), Title.of(title), ISBN.of(isbn),
+                        PatronId.from(patronId));
             default:
                 throw new IllegalStateException("Book state is invalid");
         }

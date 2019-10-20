@@ -14,8 +14,8 @@ public final class AvailableBook implements Book {
         this.isbn = isbn;
     }
 
-    public PlacedOnHoldBook placeOnHold() {
-        return new PlacedOnHoldBook(id, author, title, isbn);
+    public PlacedOnHoldBook placeOnHoldBy(PatronId patronId) {
+        return new PlacedOnHoldBook(id, author, title, isbn, patronId);
     }
 
     @Override

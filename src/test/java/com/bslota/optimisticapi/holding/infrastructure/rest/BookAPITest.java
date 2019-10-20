@@ -2,8 +2,8 @@ package com.bslota.optimisticapi.holding.infrastructure.rest;
 
 import com.bslota.optimisticapi.holding.domain.AvailableBook;
 import com.bslota.optimisticapi.holding.domain.BookId;
-import com.bslota.optimisticapi.holding.domain.BookRepository;
-import com.bslota.optimisticapi.holding.fixtures.BookFixture;
+import com.bslota.optimisticapi.holding.domain.PatronId;
+import com.bslota.optimisticapi.holding.fixtures.BookRepositoryFixture;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.UUID;
 
+import static com.bslota.optimisticapi.holding.fixtures.PatronFixture.somePatronId;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -32,7 +33,7 @@ public class BookAPITest {
     private MockMvc mockMvc;
 
     @Autowired
-    private BookRepository bookRepository;
+    private BookRepositoryFixture bookRepositoryFixture;
 
     @Test
     public void shouldNotFindAnyBook() throws Exception {
@@ -49,7 +50,7 @@ public class BookAPITest {
     @Test
     public void shouldReturnExistingBook() throws Exception {
         //given
-        AvailableBook availableBook = availableBookInTheSystem();
+        AvailableBook availableBook = bookRepositoryFixture.availableBookInTheSystem();
 
         //when
         ResultActions resultActions = getBookWith(availableBook.id());
@@ -67,10 +68,13 @@ public class BookAPITest {
     @Test
     public void shouldReturnNoContentWhenPlacingAvailableBookOnHold() throws Exception {
         //given
-        AvailableBook availableBook = availableBookInTheSystem();
+        AvailableBook availableBook = bookRepositoryFixture.availableBookInTheSystem();
+
+        //and
+        PatronId patronId = somePatronId();
 
         //when
-        ResultActions resultActions = sendPlaceOnHoldCommandFor(availableBook.id());
+        ResultActions resultActions = sendPlaceOnHoldCommandFor(availableBook.id(), patronId);
 
         //then
         resultActions.andExpect(status().isNoContent());
@@ -79,10 +83,13 @@ public class BookAPITest {
     @Test
     public void shouldReturnBookOnHoldAfterItIsPlacedOnHold() throws Exception {
         //given
-        AvailableBook availableBook = availableBookInTheSystem();
+        AvailableBook availableBook = bookRepositoryFixture.availableBookInTheSystem();
 
         //and
-        sendPlaceOnHoldCommandFor(availableBook.id());
+        PatronId patronId = somePatronId();
+
+        //and
+        sendPlaceOnHoldCommandFor(availableBook.id(), patronId);
 
         //when
         ResultActions resultActions = getBookWith(availableBook.id());
@@ -90,24 +97,23 @@ public class BookAPITest {
         //then
         resultActions.andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(availableBook.id().asString()))
+                .andExpect(jsonPath("$.heldBy").value(patronId.asString()))
                 .andExpect(jsonPath("$.status").value("PLACED_ON_HOLD"));
     }
 
-    private ResultActions sendPlaceOnHoldCommandFor(BookId id) throws Exception {
+    private ResultActions sendPlaceOnHoldCommandFor(BookId id, PatronId patronId) throws Exception {
         return mockMvc
                 .perform(patch("/books/{id}", id.asString())
-                        .content("{\"status\" : \"PLACED_ON_HOLD\"}")
+                        .content(updateStatusBodyWith("PLACED_ON_HOLD", patronId))
                         .header(CONTENT_TYPE, APPLICATION_JSON_VALUE));
+    }
+
+    private String updateStatusBodyWith(String status, PatronId patronId) {
+        return String.format("{\"status\" : \"%s\", \"patronId\" : \"%s\"}", status, patronId.asString());
     }
 
     private ResultActions getBookWith(BookId id) throws Exception {
         return mockMvc.perform(get("/books/{id}", id.asString()));
-    }
-
-    private AvailableBook availableBookInTheSystem() {
-        AvailableBook availableBook = BookFixture.someAvailableBook();
-        bookRepository.save(availableBook);
-        return availableBook;
     }
 
     private BookId someBookId() {

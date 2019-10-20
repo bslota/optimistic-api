@@ -1,5 +1,6 @@
 package com.bslota.optimisticapi.holding.infrastructure.rest;
 
+import com.bslota.optimisticapi.holding.application.PlaceOnHoldCommand;
 import com.bslota.optimisticapi.holding.application.PlacingOnHold;
 import com.bslota.optimisticapi.holding.domain.BookId;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ class BookHoldingController {
     ResponseEntity updateBookStatus(@PathVariable("bookId") UUID bookId,
                                     @RequestBody UpdateBookStatus command) {
         if (PLACED_ON_HOLD.equals(command.getStatus())) {
-            placingOnHold.placeOnHold(BookId.of(bookId));
+            placingOnHold.placeOnHold(new PlaceOnHoldCommand(BookId.of(bookId), command.patronId()));
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.ok().build(); //we do not care about it now

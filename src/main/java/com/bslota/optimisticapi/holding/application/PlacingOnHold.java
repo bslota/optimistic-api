@@ -13,13 +13,13 @@ public class PlacingOnHold {
         this.bookRepository = bookRepository;
     }
 
-    public void placeOnHold(BookId id) {
+    public void placeOnHold(PlaceOnHoldCommand command) {
         PlacedOnHoldBook placedOnHoldBook =
-                bookRepository.findBy(id)
+                bookRepository.findBy(command.getBookId())
                         .filter(book -> book instanceof AvailableBook)
                         .map(book -> (AvailableBook) book)
                         .orElseThrow(() -> new IllegalStateException("Book does not exist or is not available"))
-                        .placeOnHold();
+                        .placeOnHoldBy(command.getPatronId());
         bookRepository.save(placedOnHoldBook);
     }
 }

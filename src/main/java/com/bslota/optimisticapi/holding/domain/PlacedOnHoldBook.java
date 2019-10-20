@@ -6,12 +6,14 @@ public final class PlacedOnHoldBook implements Book {
     private final Author author;
     private final Title title;
     private final ISBN isbn;
+    private final PatronId patronId;
 
-    public PlacedOnHoldBook(BookId id, Author author, Title title, ISBN isbn) {
+    public PlacedOnHoldBook(BookId id, Author author, Title title, ISBN isbn, PatronId patronId) {
         this.id = id;
         this.author = author;
         this.title = title;
         this.isbn = isbn;
+        this.patronId = patronId;
     }
 
     @Override
@@ -32,5 +34,9 @@ public final class PlacedOnHoldBook implements Book {
     @Override
     public ISBN isbn() {
         return isbn;
+    }
+
+    public PatronId getPatronId() {
+        return patronId;
     }
 }
