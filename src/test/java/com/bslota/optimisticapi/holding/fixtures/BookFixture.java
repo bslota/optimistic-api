@@ -3,8 +3,11 @@ package com.bslota.optimisticapi.holding.fixtures;
 import com.bslota.optimisticapi.holding.domain.Author;
 import com.bslota.optimisticapi.holding.domain.AvailableBook;
 import com.bslota.optimisticapi.holding.domain.BookFactory;
+import com.bslota.optimisticapi.holding.domain.BookId;
 import com.bslota.optimisticapi.holding.domain.ISBN;
 import com.bslota.optimisticapi.holding.domain.Title;
+
+import java.util.UUID;
 
 public class BookFixture {
 
@@ -12,6 +15,10 @@ public class BookFixture {
 
     public static AvailableBook someAvailableBook() {
         return (AvailableBook) bookFactory.createAvailableBook(someAuthor(), someTitle(), someISBN());
+    }
+
+    public static BookId someBookId() {
+        return BookId.of(UUID.randomUUID());
     }
 
     public static ISBN someISBN() {

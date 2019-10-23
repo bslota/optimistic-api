@@ -1,9 +1,12 @@
 package com.bslota.optimisticapi.holding.application;
 
+import com.bslota.optimisticapi.holding.aggregate.StaleStateIdentified;
 import com.bslota.optimisticapi.holding.domain.AvailableBook;
-import com.bslota.optimisticapi.holding.domain.BookId;
+import com.bslota.optimisticapi.holding.domain.Book;
 import com.bslota.optimisticapi.holding.domain.BookRepository;
 import com.bslota.optimisticapi.holding.domain.PlacedOnHoldBook;
+
+import java.util.Optional;
 
 public class PlacingOnHold {
 
@@ -13,13 +16,29 @@ public class PlacingOnHold {
         this.bookRepository = bookRepository;
     }
 
-    public void placeOnHold(PlaceOnHoldCommand command) {
-        PlacedOnHoldBook placedOnHoldBook =
-                bookRepository.findBy(command.getBookId())
-                        .filter(book -> book instanceof AvailableBook)
-                        .map(book -> (AvailableBook) book)
-                        .orElseThrow(() -> new IllegalStateException("Book does not exist or is not available"))
-                        .placeOnHoldBy(command.getPatronId());
-        bookRepository.save(placedOnHoldBook);
+    public Result placeOnHold(PlaceOnHoldCommand command) {
+        Optional<Book> foundBook = bookRepository.findBy(command.getBookId());
+        return foundBook
+                .map(book -> placeOnHold(command, book))
+                .orElseGet(BookNotFound::new);
+    }
+
+    private Result placeOnHold(PlaceOnHoldCommand command, Book book) {
+        if (book instanceof AvailableBook) {
+            return placeOnHold(command, (AvailableBook) book);
+        } else {
+            return new BookConflictIdentified(book);
+        }
+    }
+
+    private Result placeOnHold(PlaceOnHoldCommand command, AvailableBook book) {
+        try {
+            PlacedOnHoldBook placedOnHoldBook = book.placeOnHoldBy(command.getPatronId());
+            bookRepository.save(placedOnHoldBook);
+            return new BookPlacedOnHold();
+        } catch (StaleStateIdentified ex) {
+            Book currentState = bookRepository.findBy(book.id()).orElse(null);
+            return new BookConflictIdentified(currentState);
+        }
     }
 }

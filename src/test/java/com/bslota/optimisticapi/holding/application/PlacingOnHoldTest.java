@@ -2,9 +2,11 @@ package com.bslota.optimisticapi.holding.application;
 
 import com.bslota.optimisticapi.holding.domain.AvailableBook;
 import com.bslota.optimisticapi.holding.domain.Book;
+import com.bslota.optimisticapi.holding.domain.BookId;
 import com.bslota.optimisticapi.holding.domain.BookRepository;
 import com.bslota.optimisticapi.holding.domain.PatronId;
 import com.bslota.optimisticapi.holding.domain.PlacedOnHoldBook;
+import com.bslota.optimisticapi.holding.fixtures.BookFixture;
 import com.bslota.optimisticapi.holding.infrastructure.memory.InMemoryBookRepository;
 import org.junit.Test;
 
@@ -25,9 +27,12 @@ public class PlacingOnHoldTest {
         AvailableBook availableBook = someExistingAvailableBook();
 
         //when
-        placingOnHold.placeOnHold(new PlaceOnHoldCommand(availableBook.id(), patronId));
+        Result result = placingOnHold.placeOnHold(new PlaceOnHoldCommand(availableBook.id(), patronId));
 
         //then
+        assertTrue(result instanceof BookPlacedOnHold);
+
+        //and
         Book book = bookRepository.findBy(availableBook.id()).get();
         assertTrue(book instanceof PlacedOnHoldBook);
     }
@@ -49,8 +54,38 @@ public class PlacingOnHoldTest {
         assertEquals(patronId, book.getPatronId());
     }
 
+    @Test
+    public void shouldReturnNotFoundResultWhenBookDoesNotExist() {
+        //given
+        BookId idOfNotExistingBook = BookFixture.someBookId();
+
+        //when
+        Result result = placingOnHold.placeOnHold(new PlaceOnHoldCommand(idOfNotExistingBook, patronId));
+
+        //then
+        assertTrue(result instanceof BookNotFound);
+    }
+
+    @Test
+    public void shouldReturnConflictWhenBookIsNoLongerAvailable() {
+        //given
+        Book placedOnHoldBook = somePlacedOnHoldBook();
+
+        //when
+        Result result = placingOnHold.placeOnHold(new PlaceOnHoldCommand(placedOnHoldBook.id(), patronId));
+
+        //then
+        assertTrue(result instanceof BookConflictIdentified);
+    }
+
     private AvailableBook someExistingAvailableBook() {
         AvailableBook book = someAvailableBook();
+        bookRepository.save(book);
+        return book;
+    }
+
+    private PlacedOnHoldBook somePlacedOnHoldBook() {
+        PlacedOnHoldBook book = someAvailableBook().placeOnHoldBy(patronId);
         bookRepository.save(book);
         return book;
     }
