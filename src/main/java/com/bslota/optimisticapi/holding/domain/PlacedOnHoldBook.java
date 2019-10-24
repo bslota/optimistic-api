@@ -45,6 +45,10 @@ public final class PlacedOnHoldBook implements Book {
         return version;
     }
 
+    public PlacedOnHoldBook withVersion(Version version) {
+        return new PlacedOnHoldBook(id, author, title, isbn, patronId, version);
+    }
+
     public PatronId getPatronId() {
         return patronId;
     }

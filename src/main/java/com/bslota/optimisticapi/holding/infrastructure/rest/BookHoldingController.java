@@ -7,6 +7,7 @@ import com.bslota.optimisticapi.holding.application.PlaceOnHoldCommand;
 import com.bslota.optimisticapi.holding.application.PlacingOnHold;
 import com.bslota.optimisticapi.holding.application.Result;
 import com.bslota.optimisticapi.holding.domain.BookId;
+import com.bslota.optimisticapi.holding.query.BookView;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -33,7 +34,9 @@ class BookHoldingController {
     ResponseEntity updateBookStatus(@PathVariable("bookId") UUID bookId,
                                     @RequestBody UpdateBookStatus command) {
         if (PLACED_ON_HOLD.equals(command.getStatus())) {
-            Result result = placingOnHold.placeOnHold(new PlaceOnHoldCommand(BookId.of(bookId), command.patronId()));
+            PlaceOnHoldCommand placeOnHoldCommand = new PlaceOnHoldCommand(BookId.of(bookId), command.patronId(),
+                    command.version());
+            Result result = placingOnHold.handle(placeOnHoldCommand);
             return buildResponseFrom(result);
         } else {
             return ResponseEntity.ok().build(); //we do not care about it now
@@ -47,9 +50,13 @@ class BookHoldingController {
             return ResponseEntity.notFound().build();
         } else if (result instanceof BookConflictIdentified) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(((BookConflictIdentified) result).currentState().orElse(null));
+                    .body(((BookConflictIdentified) result)
+                            .currentState()
+                            .map(BookView::from)
+                            .orElse(null));
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 }

@@ -12,8 +12,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.ResultActions;
 
+import static com.bslota.optimisticapi.holding.fixtures.BookFixture.bookIdFrom;
 import static com.bslota.optimisticapi.holding.fixtures.PatronFixture.somePatronId;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -33,20 +36,23 @@ public class PlacingOnHoldConflictTest {
         AvailableBook availableBook = bookRepositoryFixture.availableBookInTheSystem();
 
         //and
-        BookView book = api.getDeserializedBookWith(availableBook.id());
+        BookView book = api.viewBookWith(availableBook.id());
+
+        //and
+        AvailableBook updatedBook = bookRepositoryFixture.bookWasModifiedInTheMeantime(bookIdFrom(book.getId()));
 
         //when Bruce places book on hold
         PatronId bruce = somePatronId();
         ResultActions bruceResult =  api.sendPlaceOnHoldCommandFor(book.getId(), bruce, book.getVersion());
 
         //then
-        bruceResult.andExpect(status().isNoContent());
-
-        //when Steve tries to place the same book on hold
-        ResultActions steveResult =  api.sendPlaceOnHoldCommandFor(book.getId(), bruce, book.getVersion());
-
-        //then
-        steveResult.andExpect(status().isConflict());
-
+        bruceResult
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.id").value(updatedBook.id().asString()))
+                .andExpect(jsonPath("$.title").value(updatedBook.title().asString()))
+                .andExpect(jsonPath("$.isbn").value(updatedBook.isbn().asString()))
+                .andExpect(jsonPath("$.author").value(updatedBook.author().asString()))
+                .andExpect(jsonPath("$.status").value("AVAILABLE"))
+                .andExpect(jsonPath("$.version").value(not(updatedBook.version().asLong())));
     }
 }

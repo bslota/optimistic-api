@@ -23,7 +23,7 @@ class BookAPIFixture {
     @Autowired
     private ObjectMapper objectMapper;
 
-    BookView getDeserializedBookWith(BookId id) throws Exception {
+    BookView viewBookWith(BookId id) throws Exception {
         String content = getBookWith(id)
                 .andReturn()
                 .getResponse()

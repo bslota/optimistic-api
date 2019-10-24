@@ -16,24 +16,26 @@ public class PlacingOnHold {
         this.bookRepository = bookRepository;
     }
 
-    public Result placeOnHold(PlaceOnHoldCommand command) {
+    public Result handle(PlaceOnHoldCommand command) {
         Optional<Book> foundBook = bookRepository.findBy(command.getBookId());
         return foundBook
-                .map(book -> placeOnHold(command, book))
+                .map(book -> handle(command, book))
                 .orElseGet(BookNotFound::new);
     }
 
-    private Result placeOnHold(PlaceOnHoldCommand command, Book book) {
+    private Result handle(PlaceOnHoldCommand command, Book book) {
         if (book instanceof AvailableBook) {
-            return placeOnHold(command, (AvailableBook) book);
+            return handle(command, (AvailableBook) book);
         } else {
             return new BookConflictIdentified(book);
         }
     }
 
-    private Result placeOnHold(PlaceOnHoldCommand command, AvailableBook book) {
+    private Result handle(PlaceOnHoldCommand command, AvailableBook book) {
         try {
-            PlacedOnHoldBook placedOnHoldBook = book.placeOnHoldBy(command.getPatronId());
+            PlacedOnHoldBook placedOnHoldBook =
+                    book.placeOnHoldBy(command.getPatronId())
+                            .withVersion(command.getVersion());
             bookRepository.save(placedOnHoldBook);
             return new BookPlacedOnHold();
         } catch (StaleStateIdentified ex) {

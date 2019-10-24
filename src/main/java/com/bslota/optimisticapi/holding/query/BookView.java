@@ -36,7 +36,7 @@ public class BookView {
         this.version = version;
     }
 
-    static BookView from(Book book) {
+    public static BookView from(Book book) {
         String patronId = (book instanceof PlacedOnHoldBook) ? ((PlacedOnHoldBook) book).getPatronId().asString() : null;
         return new BookView(book.id().asString(),
                 book.author().asString(),

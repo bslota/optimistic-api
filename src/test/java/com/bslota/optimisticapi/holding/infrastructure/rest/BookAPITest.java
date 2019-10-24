@@ -4,6 +4,7 @@ import com.bslota.optimisticapi.holding.domain.AvailableBook;
 import com.bslota.optimisticapi.holding.domain.BookId;
 import com.bslota.optimisticapi.holding.domain.PatronId;
 import com.bslota.optimisticapi.holding.fixtures.BookRepositoryFixture;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +59,8 @@ public class BookAPITest {
                 .andExpect(jsonPath("$.title").value(availableBook.title().asString()))
                 .andExpect(jsonPath("$.isbn").value(availableBook.isbn().asString()))
                 .andExpect(jsonPath("$.author").value(availableBook.author().asString()))
-                .andExpect(jsonPath("$.status").value("AVAILABLE"));
+                .andExpect(jsonPath("$.status").value("AVAILABLE"))
+                .andExpect(jsonPath("$.version").value(availableBook.version().asLong()));
     }
 
     @Test
@@ -88,6 +90,7 @@ public class BookAPITest {
         resultActions.andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(availableBook.id().asString()))
                 .andExpect(jsonPath("$.heldBy").value(patronId.asString()))
-                .andExpect(jsonPath("$.status").value("PLACED_ON_HOLD"));
+                .andExpect(jsonPath("$.status").value("PLACED_ON_HOLD"))
+                .andExpect(jsonPath("$.version").value(Matchers.not(availableBook.version().asLong())));
     }
 }
