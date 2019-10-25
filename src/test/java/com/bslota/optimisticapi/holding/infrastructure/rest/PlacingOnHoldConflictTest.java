@@ -1,6 +1,7 @@
 package com.bslota.optimisticapi.holding.infrastructure.rest;
 
 import com.bslota.optimisticapi.holding.domain.AvailableBook;
+import com.bslota.optimisticapi.holding.domain.BookId;
 import com.bslota.optimisticapi.holding.domain.PatronId;
 import com.bslota.optimisticapi.holding.fixtures.BookRepositoryFixture;
 import com.bslota.optimisticapi.holding.query.BookView;
@@ -33,13 +34,13 @@ public class PlacingOnHoldConflictTest {
     @Test
     public void shouldSignalConflict() throws Exception {
         //given
-        AvailableBook availableBook = bookRepositoryFixture.availableBookInTheSystem();
+        AvailableBook availableBook = availableBookInTheSystem();
 
         //and
         BookView book = api.viewBookWith(availableBook.id());
 
         //and
-        AvailableBook updatedBook = bookRepositoryFixture.bookWasModifiedInTheMeantime(bookIdFrom(book.getId()));
+        AvailableBook updatedBook = bookWasModifiedInTheMeantime(bookIdFrom(book.getId()));
 
         //when Bruce places book on hold
         PatronId bruce = somePatronId();
@@ -54,5 +55,13 @@ public class PlacingOnHoldConflictTest {
                 .andExpect(jsonPath("$.author").value(updatedBook.author().asString()))
                 .andExpect(jsonPath("$.status").value("AVAILABLE"))
                 .andExpect(jsonPath("$.version").value(not(updatedBook.version().asLong())));
+    }
+
+    private AvailableBook availableBookInTheSystem() {
+        return bookRepositoryFixture.availableBookInTheSystem();
+    }
+
+    private AvailableBook bookWasModifiedInTheMeantime(BookId bookId) {
+        return bookRepositoryFixture.bookWasModifiedInTheMeantime(bookId);
     }
 }
