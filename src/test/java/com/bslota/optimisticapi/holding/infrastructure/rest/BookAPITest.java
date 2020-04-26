@@ -7,6 +7,7 @@ import com.bslota.optimisticapi.holding.domain.PatronId;
 import com.bslota.optimisticapi.holding.fixtures.BookRepositoryFixture;
 import com.bslota.optimisticapi.holding.infrastructure.rest.BookAPIFixture.TestPlaceOnHoldCommand;
 import com.bslota.optimisticapi.holding.query.BookView;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import static com.bslota.optimisticapi.holding.fixtures.BookFixture.someBookId;
 import static com.bslota.optimisticapi.holding.fixtures.BookFixture.someVersion;
 import static com.bslota.optimisticapi.holding.fixtures.PatronFixture.somePatronId;
 import static com.bslota.optimisticapi.holding.infrastructure.rest.BookAPIFixture.TestPlaceOnHoldCommand.placeOnHoldCommandFor;
+import static java.lang.String.format;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpHeaders.ETAG;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -112,7 +114,7 @@ public class BookAPITest {
         //then
         resultActions
                 .andExpect(status().isOk())
-                .andExpect(header().string(ETAG, String.format("\"%d\"", version.asLong())));
+                .andExpect(header().string(ETAG, format("\"%d\"", version.asLong())));
     }
 
     @Test
@@ -131,9 +133,22 @@ public class BookAPITest {
         ResultActions resultActions = api.send(command);
 
         //then
-        resultActions.andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(availableBook.id().asString()))
-                .andExpect(jsonPath("$.heldBy").value(patronId.asString()))
-                .andExpect(jsonPath("$.status").value("PLACED_ON_HOLD"));
+        resultActions.andExpect(status().isNoContent());
+    }
+
+    @Test
+    public void shouldSignalPreconditionFailed() throws Exception {
+        //given
+        AvailableBook availableBook = bookRepositoryFixture.availableBookInTheSystem();
+
+        //and
+        String staleETag = format("\"%d\"", someVersion().asLong());
+
+        //when
+        TestPlaceOnHoldCommand command = placeOnHoldCommandFor(availableBook, patronId).withIfMatchHeader(staleETag);
+        ResultActions resultActions = api.send(command);
+
+        //then
+        resultActions.andExpect(status().isPreconditionFailed());
     }
 }

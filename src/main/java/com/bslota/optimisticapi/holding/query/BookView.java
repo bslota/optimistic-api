@@ -4,7 +4,6 @@ import com.bslota.optimisticapi.holding.domain.AvailableBook;
 import com.bslota.optimisticapi.holding.domain.Book;
 import com.bslota.optimisticapi.holding.domain.PlacedOnHoldBook;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -18,7 +17,6 @@ public class BookView {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String patronId;
     private final String status;
-    @JsonIgnore
     private final long version;
 
     @JsonCreator

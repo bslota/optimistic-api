@@ -1,5 +1,6 @@
 package com.bslota.optimisticapi.holding.infrastructure.rest;
 
+import com.bslota.optimisticapi.holding.domain.Book;
 import com.bslota.optimisticapi.holding.domain.BookId;
 import com.bslota.optimisticapi.holding.domain.PatronId;
 import com.bslota.optimisticapi.holding.query.BookView;
@@ -55,7 +56,7 @@ class BookAPIFixture {
         return mockMvc
                 .perform(patch("/books/{id}", command.bookId())
                         .content(command.body())
-                        .header(CONTENT_TYPE, APPLICATION_JSON_VALUE));
+                        .headers(httpHeaders));
     }
 
     private HttpHeaders httpHeaders() {
@@ -75,6 +76,10 @@ class BookAPIFixture {
             this.patronId = patronId;
             this.version = version;
             this.ifMatchHeader = format("\"%d\"", version);
+        }
+
+        static TestPlaceOnHoldCommand placeOnHoldCommandFor(Book book, PatronId patronId) {
+            return placeOnHoldCommandFor(book.id().asString(), patronId, book.version().asLong());
         }
 
         static TestPlaceOnHoldCommand placeOnHoldCommandFor(BookView bookView, PatronId patronId) {

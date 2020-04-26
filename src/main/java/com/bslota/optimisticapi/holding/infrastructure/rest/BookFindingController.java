@@ -1,5 +1,6 @@
 package com.bslota.optimisticapi.holding.infrastructure.rest;
 
+import com.bslota.optimisticapi.holding.aggregate.Version;
 import com.bslota.optimisticapi.holding.domain.BookId;
 import com.bslota.optimisticapi.holding.query.FindingBook;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ class BookFindingController {
     ResponseEntity<?> findBookWith(@PathVariable("bookId") UUID bookIdValue) {
         return findingBook
                 .by(BookId.of(bookIdValue))
-                .map(it -> ResponseEntity.ok().eTag(String.valueOf(it.getVersion())).body(it))
+                .map(it -> ResponseEntity.ok().eTag(ETag.of(Version.from(it.getVersion())).getValue()).body(it))
                 .orElse(ResponseEntity.notFound().build());
     }
 }
