@@ -17,8 +17,8 @@ import org.springframework.test.web.servlet.ResultActions;
 import static com.bslota.optimisticapi.holding.fixtures.BookFixture.bookIdFrom;
 import static com.bslota.optimisticapi.holding.fixtures.PatronFixture.somePatronId;
 import static com.bslota.optimisticapi.holding.infrastructure.rest.BookAPIFixture.TestPlaceOnHoldCommand.placeOnHoldCommandFor;
-import static org.hamcrest.Matchers.not;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static org.springframework.http.HttpHeaders.ETAG;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -57,6 +57,29 @@ public class PlacingOnHoldConcurrencyTest {
                 .andExpect(jsonPath("$.isbn").value(updatedBook.isbn().asString()))
                 .andExpect(jsonPath("$.author").value(updatedBook.author().asString()))
                 .andExpect(jsonPath("$.status").value("AVAILABLE"));
+    }
+
+    @Test
+    public void shouldSignalPreconditionFailed() throws Exception {
+        //given
+        AvailableBook availableBook = availableBookInTheSystem();
+
+        //and
+        ResultActions bookViewResponse = api.getBookWith(availableBook.id());
+        BookView book = api.parseBookViewFrom(bookViewResponse);
+        String eTag = bookViewResponse.andReturn().getResponse().getHeader(ETAG);
+
+        //and
+        bookWasModifiedInTheMeantime(bookIdFrom(book.getId()));
+
+        //when Bruce places book on hold
+        PatronId bruce = somePatronId();
+        TestPlaceOnHoldCommand command = placeOnHoldCommandFor(book.getId(), bruce, book.getVersion())
+                .withIfMatchHeader(eTag);
+        ResultActions bruceResult = api.send(command);
+
+        //then
+        bruceResult.andExpect(status().isPreconditionFailed());
     }
 
     private AvailableBook availableBookInTheSystem() {
