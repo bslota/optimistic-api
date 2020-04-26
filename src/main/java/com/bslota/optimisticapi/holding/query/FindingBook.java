@@ -13,7 +13,7 @@ public class FindingBook {
         this.bookRepository = bookRepository;
     }
 
-    public Optional<BookView> findBy(BookId bookId) {
+    public Optional<BookView> by(BookId bookId) {
         return bookRepository.findBy(bookId).map(BookView::from);
     }
 }

@@ -11,12 +11,18 @@ import com.bslota.optimisticapi.holding.domain.Title;
 import java.util.Random;
 import java.util.UUID;
 
+import static java.lang.Math.abs;
+
 public class BookFixture {
 
     private static BookFactory bookFactory = new BookFactory();
 
     public static AvailableBook someAvailableBook() {
         return (AvailableBook) bookFactory.createAvailableBook(someAuthor(), someTitle(), someISBN());
+    }
+
+    public static AvailableBook someAvailableBookWith(Version version) {
+        return new AvailableBook(BookId.of(UUID.randomUUID()), someAuthor(), someTitle(), someISBN(), version);
     }
 
     public static BookId bookIdFrom(String value) {
@@ -40,6 +46,6 @@ public class BookFixture {
     }
 
     public static Version someVersion() {
-        return Version.from(new Random().nextLong());
+        return Version.from(abs(new Random().nextLong()));
     }
 }

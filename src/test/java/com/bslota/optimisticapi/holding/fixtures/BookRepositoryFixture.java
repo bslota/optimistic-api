@@ -1,5 +1,6 @@
 package com.bslota.optimisticapi.holding.fixtures;
 
+import com.bslota.optimisticapi.holding.aggregate.Version;
 import com.bslota.optimisticapi.holding.domain.Author;
 import com.bslota.optimisticapi.holding.domain.AvailableBook;
 import com.bslota.optimisticapi.holding.domain.BookId;
@@ -15,6 +16,12 @@ public class BookRepositoryFixture {
 
     public AvailableBook availableBookInTheSystem() {
         AvailableBook availableBook = BookFixture.someAvailableBook();
+        bookRepository.save(availableBook);
+        return availableBook;
+    }
+
+    public AvailableBook availableBookInTheSystemWith(Version version) {
+        AvailableBook availableBook = BookFixture.someAvailableBookWith(version);
         bookRepository.save(availableBook);
         return availableBook;
     }
