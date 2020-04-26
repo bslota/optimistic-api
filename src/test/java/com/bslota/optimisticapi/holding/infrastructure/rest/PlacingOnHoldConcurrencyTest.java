@@ -4,6 +4,7 @@ import com.bslota.optimisticapi.holding.domain.AvailableBook;
 import com.bslota.optimisticapi.holding.domain.BookId;
 import com.bslota.optimisticapi.holding.domain.PatronId;
 import com.bslota.optimisticapi.holding.fixtures.BookRepositoryFixture;
+import com.bslota.optimisticapi.holding.infrastructure.rest.BookAPIFixture.TestPlaceOnHoldCommand;
 import com.bslota.optimisticapi.holding.query.BookView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,6 +16,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import static com.bslota.optimisticapi.holding.fixtures.BookFixture.bookIdFrom;
 import static com.bslota.optimisticapi.holding.fixtures.PatronFixture.somePatronId;
+import static com.bslota.optimisticapi.holding.infrastructure.rest.BookAPIFixture.TestPlaceOnHoldCommand.placeOnHoldCommandFor;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -23,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @RunWith(SpringRunner.class)
 @AutoConfigureMockMvc
-public class PlacingOnHoldConflictTest {
+public class PlacingOnHoldConcurrencyTest {
 
     @Autowired
     private BookRepositoryFixture bookRepositoryFixture;
@@ -32,7 +34,7 @@ public class PlacingOnHoldConflictTest {
     private BookAPIFixture api;
 
     @Test
-    public void shouldSignalConflict() throws Exception {
+    public void shouldSignalConflictWhenIfMatchHeaderIsMissing() throws Exception {
         //given
         AvailableBook availableBook = availableBookInTheSystem();
 
@@ -44,7 +46,8 @@ public class PlacingOnHoldConflictTest {
 
         //when Bruce places book on hold
         PatronId bruce = somePatronId();
-        ResultActions bruceResult =  api.sendPlaceOnHoldCommandFor(book.getId(), bruce, book.getVersion());
+        TestPlaceOnHoldCommand command = placeOnHoldCommandFor(book.getId(), bruce, book.getVersion()).withoutIfMatchHeader();
+        ResultActions bruceResult = api.send(command);
 
         //then
         bruceResult
@@ -53,8 +56,7 @@ public class PlacingOnHoldConflictTest {
                 .andExpect(jsonPath("$.title").value(updatedBook.title().asString()))
                 .andExpect(jsonPath("$.isbn").value(updatedBook.isbn().asString()))
                 .andExpect(jsonPath("$.author").value(updatedBook.author().asString()))
-                .andExpect(jsonPath("$.status").value("AVAILABLE"))
-                .andExpect(jsonPath("$.version").value(not(updatedBook.version().asLong())));
+                .andExpect(jsonPath("$.status").value("AVAILABLE"));
     }
 
     private AvailableBook availableBookInTheSystem() {
