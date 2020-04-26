@@ -65,7 +65,8 @@ public class BookAPITest {
                 .andExpect(jsonPath("$.title").value(availableBook.title().asString()))
                 .andExpect(jsonPath("$.isbn").value(availableBook.isbn().asString()))
                 .andExpect(jsonPath("$.author").value(availableBook.author().asString()))
-                .andExpect(jsonPath("$.status").value("AVAILABLE"));
+                .andExpect(jsonPath("$.status").value("AVAILABLE"))
+                .andExpect(jsonPath("$.version").value(availableBook.version().asLong()));
     }
 
     @Test
@@ -95,7 +96,8 @@ public class BookAPITest {
         resultActions.andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(availableBook.id().asString()))
                 .andExpect(jsonPath("$.heldBy").value(patronId.asString()))
-                .andExpect(jsonPath("$.status").value("PLACED_ON_HOLD"));
+                .andExpect(jsonPath("$.status").value("PLACED_ON_HOLD"))
+                .andExpect(jsonPath("$.version").value(Matchers.not(availableBook.version().asLong())));
     }
 
     @Test
@@ -110,8 +112,7 @@ public class BookAPITest {
         //then
         resultActions
                 .andExpect(status().isOk())
-                .andExpect(header().string(ETAG, String.format("\"%d\"", version.asLong())))
-                .andExpect(jsonPath("$.version").doesNotExist());
+                .andExpect(header().string(ETAG, String.format("\"%d\"", version.asLong())));
     }
 
     @Test
