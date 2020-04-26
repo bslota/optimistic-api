@@ -5,19 +5,20 @@ import com.bslota.optimisticapi.holding.domain.AvailableBook;
 import com.bslota.optimisticapi.holding.domain.BookId;
 import com.bslota.optimisticapi.holding.domain.PatronId;
 import com.bslota.optimisticapi.holding.fixtures.BookRepositoryFixture;
-import org.hamcrest.Matchers;
+import com.bslota.optimisticapi.holding.infrastructure.rest.BookAPIFixture.TestPlaceOnHoldCommand;
+import com.bslota.optimisticapi.holding.query.BookView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static com.bslota.optimisticapi.holding.fixtures.BookFixture.someBookId;
 import static com.bslota.optimisticapi.holding.fixtures.BookFixture.someVersion;
 import static com.bslota.optimisticapi.holding.fixtures.PatronFixture.somePatronId;
+import static com.bslota.optimisticapi.holding.infrastructure.rest.BookAPIFixture.TestPlaceOnHoldCommand.placeOnHoldCommandFor;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpHeaders.ETAG;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -111,5 +112,27 @@ public class BookAPITest {
                 .andExpect(status().isOk())
                 .andExpect(header().string(ETAG, String.format("\"%d\"", version.asLong())))
                 .andExpect(jsonPath("$.version").doesNotExist());
+    }
+
+    @Test
+    public void shouldSuccessfullyPlacePreviouslyReadBookOnHold() throws Exception {
+        //given
+        Version version = someVersion();
+        AvailableBook availableBook = bookRepositoryFixture.availableBookInTheSystemWith(version);
+
+        //and
+        ResultActions bookViewResponse = api.getBookWith(availableBook.id());
+        BookView book = api.parseBookViewFrom(bookViewResponse);
+        String eTag = bookViewResponse.andReturn().getResponse().getHeader(ETAG);
+
+        //when
+        TestPlaceOnHoldCommand command = placeOnHoldCommandFor(book, patronId).withIfMatchHeader(eTag);
+        ResultActions resultActions = api.send(command);
+
+        //then
+        resultActions.andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(availableBook.id().asString()))
+                .andExpect(jsonPath("$.heldBy").value(patronId.asString()))
+                .andExpect(jsonPath("$.status").value("PLACED_ON_HOLD"));
     }
 }

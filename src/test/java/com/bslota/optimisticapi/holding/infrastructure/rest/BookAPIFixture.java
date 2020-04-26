@@ -30,8 +30,11 @@ class BookAPIFixture {
     private ObjectMapper objectMapper;
 
     BookView viewBookWith(BookId id) throws Exception {
-        String content = getBookWith(id)
-                .andReturn()
+        return parseBookViewFrom(getBookWith(id));
+    }
+
+    BookView parseBookViewFrom(ResultActions resultActions) throws Exception {
+        String content = resultActions.andReturn()
                 .getResponse()
                 .getContentAsString();
         return objectMapper.readValue(content, BookView.class);
@@ -74,12 +77,21 @@ class BookAPIFixture {
             this.ifMatchHeader = format("\"%d\"", version);
         }
 
+        static TestPlaceOnHoldCommand placeOnHoldCommandFor(BookView bookView, PatronId patronId) {
+            return placeOnHoldCommandFor(bookView.getId(), patronId, bookView.getVersion());
+        }
+
         static TestPlaceOnHoldCommand placeOnHoldCommandFor(String bookId, PatronId patronId, long version) {
             return new TestPlaceOnHoldCommand(bookId, patronId.asString(), version);
         }
 
         TestPlaceOnHoldCommand withoutIfMatchHeader() {
             this.ifMatchHeader = null;
+            return this;
+        }
+
+        TestPlaceOnHoldCommand withIfMatchHeader(String eTag) {
+            this.ifMatchHeader = eTag;
             return this;
         }
 
