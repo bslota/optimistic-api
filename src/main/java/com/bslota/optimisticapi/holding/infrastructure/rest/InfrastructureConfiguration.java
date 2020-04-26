@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 
 @Configuration
 class InfrastructureConfiguration {
@@ -23,6 +24,7 @@ class InfrastructureConfiguration {
                 .registerModule(new JavaTimeModule())
                 .setVisibility(PropertyAccessor.CREATOR, ANY)
                 .setVisibility(PropertyAccessor.FIELD, ANY)
+                .setVisibility(PropertyAccessor.GETTER, NONE)
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
