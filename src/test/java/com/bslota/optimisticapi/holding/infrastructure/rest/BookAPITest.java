@@ -21,6 +21,7 @@ import static com.bslota.optimisticapi.holding.fixtures.BookFixture.someVersion;
 import static com.bslota.optimisticapi.holding.fixtures.PatronFixture.somePatronId;
 import static com.bslota.optimisticapi.holding.infrastructure.rest.BookAPIFixture.TestPlaceOnHoldCommand.placeOnHoldCommandFor;
 import static java.lang.String.format;
+import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpHeaders.ETAG;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -137,18 +138,17 @@ public class BookAPITest {
     }
 
     @Test
-    public void shouldSignalPreconditionFailed() throws Exception {
+    public void shouldSignalPreconditionRequiredWhenIfMatchIsHeaderMissing() throws Exception {
         //given
         AvailableBook availableBook = bookRepositoryFixture.availableBookInTheSystem();
 
-        //and
-        String staleETag = format("\"%d\"", someVersion().asLong());
-
         //when
-        TestPlaceOnHoldCommand command = placeOnHoldCommandFor(availableBook, patronId).withIfMatchHeader(staleETag);
+        TestPlaceOnHoldCommand command = placeOnHoldCommandFor(availableBook, patronId).withoutIfMatchHeader();
         ResultActions resultActions = api.send(command);
 
         //then
-        resultActions.andExpect(status().isPreconditionFailed());
+        resultActions
+                .andExpect(status().isPreconditionRequired())
+                .andExpect(jsonPath("$.message").value(equalTo("If-Match header is required")));
     }
 }

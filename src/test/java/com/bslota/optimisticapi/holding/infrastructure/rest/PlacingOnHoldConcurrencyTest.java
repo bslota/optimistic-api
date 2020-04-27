@@ -34,32 +34,6 @@ public class PlacingOnHoldConcurrencyTest {
     private BookAPIFixture api;
 
     @Test
-    public void shouldSignalConflictWhenIfMatchHeaderIsMissing() throws Exception {
-        //given
-        AvailableBook availableBook = availableBookInTheSystem();
-
-        //and
-        BookView book = api.viewBookWith(availableBook.id());
-
-        //and
-        AvailableBook updatedBook = bookWasModifiedInTheMeantime(bookIdFrom(book.getId()));
-
-        //when Bruce places book on hold
-        PatronId bruce = somePatronId();
-        TestPlaceOnHoldCommand command = placeOnHoldCommandFor(book.getId(), bruce, book.getVersion()).withoutIfMatchHeader();
-        ResultActions bruceResult = api.send(command);
-
-        //then
-        bruceResult
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.id").value(updatedBook.id().asString()))
-                .andExpect(jsonPath("$.title").value(updatedBook.title().asString()))
-                .andExpect(jsonPath("$.isbn").value(updatedBook.isbn().asString()))
-                .andExpect(jsonPath("$.author").value(updatedBook.author().asString()))
-                .andExpect(jsonPath("$.status").value("AVAILABLE"));
-    }
-
-    @Test
     public void shouldSignalPreconditionFailed() throws Exception {
         //given
         AvailableBook availableBook = availableBookInTheSystem();
@@ -86,7 +60,7 @@ public class PlacingOnHoldConcurrencyTest {
         return bookRepositoryFixture.availableBookInTheSystem();
     }
 
-    private AvailableBook bookWasModifiedInTheMeantime(BookId bookId) {
-        return bookRepositoryFixture.bookWasModifiedInTheMeantime(bookId);
+    private void bookWasModifiedInTheMeantime(BookId bookId) {
+        bookRepositoryFixture.bookWasModifiedInTheMeantime(bookId);
     }
 }
